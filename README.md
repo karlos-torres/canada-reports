@@ -13,7 +13,7 @@ ASP.NET Core dashboard that:
 dotnet run
 ```
 
-Configure SQL Server connection and report SQL in `/home/runner/work/canada-reports/canada-reports/appsettings.json`:
+Configure SQL Server connection and report SQL in `appsettings.json`:
 
 - `ConnectionStrings:ReportsDatabase`
 - `Reports` (array of `{ Key, Name, Query }`)

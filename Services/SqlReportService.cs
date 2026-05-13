@@ -16,15 +16,16 @@ public class SqlReportService(IConfiguration configuration) : IReportService
 
     public async Task<PagedReportResult> GetReportPageAsync(ReportDefinition report, int page, int pageSize, CancellationToken cancellationToken)
     {
+        var safeQuery = GetSafeReportQuery(report.Query);
         await using var connection = new SqlConnection(GetConnectionString());
         await connection.OpenAsync(cancellationToken);
 
-        var countSql = $"SELECT COUNT(1) FROM ({report.Query}) AS report_data;";
+        var countSql = $"SELECT COUNT(1) FROM ({safeQuery}) AS report_data;";
         await using var countCommand = new SqlCommand(countSql, connection);
         var totalCount = Convert.ToInt32(await countCommand.ExecuteScalarAsync(cancellationToken));
 
         var pageSql = $"""
-                       SELECT * FROM ({report.Query}) AS report_data
+                       SELECT * FROM ({safeQuery}) AS report_data
                        ORDER BY (SELECT NULL)
                        OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
                        """;
@@ -60,10 +61,11 @@ public class SqlReportService(IConfiguration configuration) : IReportService
 
     public async Task<PagedReportResult> GetReportAllAsync(ReportDefinition report, CancellationToken cancellationToken)
     {
+        var safeQuery = GetSafeReportQuery(report.Query);
         await using var connection = new SqlConnection(GetConnectionString());
         await connection.OpenAsync(cancellationToken);
 
-        var sql = $"SELECT * FROM ({report.Query}) AS report_data;";
+        var sql = $"SELECT * FROM ({safeQuery}) AS report_data;";
         await using var command = new SqlCommand(sql, connection);
 
         var rows = new List<IReadOnlyList<object?>>();
@@ -100,5 +102,31 @@ public class SqlReportService(IConfiguration configuration) : IReportService
         }
 
         return connectionString;
+    }
+
+    private static string GetSafeReportQuery(string query)
+    {
+        var cleanedQuery = query.Trim();
+        var upperQuery = cleanedQuery.ToUpperInvariant();
+
+        if (string.IsNullOrWhiteSpace(cleanedQuery) ||
+            !upperQuery.StartsWith("SELECT ") ||
+            cleanedQuery.Contains(';') ||
+            upperQuery.Contains("--") ||
+            upperQuery.Contains("/*") ||
+            upperQuery.Contains("*/") ||
+            upperQuery.Contains("INSERT ") ||
+            upperQuery.Contains("UPDATE ") ||
+            upperQuery.Contains("DELETE ") ||
+            upperQuery.Contains("DROP ") ||
+            upperQuery.Contains("ALTER ") ||
+            upperQuery.Contains("TRUNCATE ") ||
+            upperQuery.Contains("EXEC ") ||
+            upperQuery.Contains("MERGE "))
+        {
+            throw new InvalidOperationException("Only single SELECT report queries are allowed.");
+        }
+
+        return cleanedQuery;
     }
 }
