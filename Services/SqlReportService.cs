@@ -107,6 +107,11 @@ public class SqlReportService(IConfiguration configuration) : IReportService
     private static string GetSafeReportQuery(string query)
     {
         var cleanedQuery = query.Trim();
+        if (cleanedQuery.EndsWith(';'))
+        {
+            cleanedQuery = cleanedQuery[..^1].TrimEnd();
+        }
+
         var upperQuery = cleanedQuery.ToUpperInvariant();
 
         if (string.IsNullOrWhiteSpace(cleanedQuery) ||
