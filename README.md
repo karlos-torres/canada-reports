@@ -16,4 +16,12 @@ dotnet run
 Configure SQL Server connection and report SQL in `appsettings.json`:
 
 - `ConnectionStrings:ReportsDatabase`
-- `Reports` (array of `{ Key, Name, Query }`)
+- `Reports` (array of `{ Key, Name, Query, Parameters[] }`)
+
+Each report parameter supports:
+
+- `Key`: SQL parameter name without `@` (for example `StartDate` maps to `@StartDate`)
+- `Label`: UI label
+- `ControlType`: `date`, `number`, `dropdown`/`select`, `textbox`
+- `Required`, `DefaultValue`, `Placeholder`
+- `Options` (for dropdown/select): array of `{ Value, Label }`

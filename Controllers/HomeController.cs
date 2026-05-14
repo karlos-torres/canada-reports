@@ -22,6 +22,8 @@ public class HomeController(IReportService reportService) : Controller
                 Reports = reports,
                 SelectedReportKey = string.Empty,
                 SelectedReportName = "No reports configured",
+                SelectedReportParameters = [],
+                ParameterValues = new Dictionary<string, string>(),
                 Columns = [],
                 Rows = [],
                 Page = 1,
@@ -32,17 +34,20 @@ public class HomeController(IReportService reportService) : Controller
         }
 
         var selectedReport = reports.FirstOrDefault(r => r.Key.Equals(reportKey, StringComparison.OrdinalIgnoreCase)) ?? reports[0];
+        var parameterValues = GetParameterValues(selectedReport);
         page = Math.Max(page, 1);
         pageSize = pageSize <= 0 ? DefaultPageSize : pageSize;
 
         try
         {
-            var result = await _reportService.GetReportPageAsync(selectedReport, page, pageSize, cancellationToken);
+            var result = await _reportService.GetReportPageAsync(selectedReport, parameterValues, page, pageSize, cancellationToken);
             return View(new ReportPageViewModel
             {
                 Reports = reports,
                 SelectedReportKey = selectedReport.Key,
                 SelectedReportName = selectedReport.Name,
+                SelectedReportParameters = selectedReport.Parameters,
+                ParameterValues = parameterValues,
                 Columns = result.Columns,
                 Rows = result.Rows,
                 Page = page,
@@ -57,6 +62,8 @@ public class HomeController(IReportService reportService) : Controller
                 Reports = reports,
                 SelectedReportKey = selectedReport.Key,
                 SelectedReportName = selectedReport.Name,
+                SelectedReportParameters = selectedReport.Parameters,
+                ParameterValues = parameterValues,
                 Columns = [],
                 Rows = [],
                 Page = page,
@@ -88,7 +95,8 @@ public class HomeController(IReportService reportService) : Controller
             return NotFound("Unknown report.");
         }
 
-        var reportData = await _reportService.GetReportAllAsync(selectedReport, cancellationToken);
+        var parameterValues = GetParameterValues(selectedReport);
+        var reportData = await _reportService.GetReportAllAsync(selectedReport, parameterValues, cancellationToken);
 
         var csv = new StringBuilder();
         csv.AppendLine(string.Join(",", reportData.Columns.Select(EscapeCsvValue)));
@@ -108,5 +116,21 @@ public class HomeController(IReportService reportService) : Controller
         var text = value?.ToString() ?? string.Empty;
         var escaped = text.Replace("\"", "\"\"");
         return $"\"{escaped}\"";
+    }
+
+    private Dictionary<string, string> GetParameterValues(ReportDefinition report)
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var parameter in report.Parameters)
+        {
+            var queryValue = Request.Query[$"param_{parameter.Key}"].ToString();
+            var selectedValue = string.IsNullOrWhiteSpace(queryValue) ? parameter.DefaultValue : queryValue;
+            if (selectedValue is not null)
+            {
+                values[parameter.Key] = selectedValue;
+            }
+        }
+
+        return values;
     }
 }

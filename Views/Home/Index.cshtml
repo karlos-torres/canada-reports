@@ -1,7 +1,21 @@
 ﻿@model canada_reports.Models.ReportPageViewModel
+@using System.Globalization
 
 @{
     ViewData["Title"] = "Reports Dashboard";
+    var routeValues = new Dictionary<string, string>
+    {
+        ["reportKey"] = Model.SelectedReportKey,
+        ["pageSize"] = Model.PageSize.ToString(CultureInfo.InvariantCulture)
+    };
+
+    foreach (var parameter in Model.SelectedReportParameters)
+    {
+        if (Model.ParameterValues.TryGetValue(parameter.Key, out var value))
+        {
+            routeValues[$"param_{parameter.Key}"] = value;
+        }
+    }
 }
 
 <div class="row">
@@ -29,11 +43,85 @@
             {
                 <a class="btn btn-success"
                    asp-action="Export"
-                   asp-route-reportKey="@Model.SelectedReportKey">
+                   asp-all-route-data="@routeValues">
                     Export to Excel (CSV)
                 </a>
             }
         </div>
+
+        @if (Model.SelectedReportParameters.Count > 0)
+        {
+            <div class="card mb-3">
+                <div class="card-header">Parameters</div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index" class="row g-3">
+                        <input type="hidden" name="reportKey" value="@Model.SelectedReportKey" />
+                        <input type="hidden" name="page" value="1" />
+                        <input type="hidden" name="pageSize" value="@Model.PageSize" />
+
+                        @foreach (var parameter in Model.SelectedReportParameters)
+                        {
+                            Model.ParameterValues.TryGetValue(parameter.Key, out var currentValue);
+                            <div class="col-md-6">
+                                <label class="form-label" for="param_@parameter.Key">@parameter.Label</label>
+                                @switch (parameter.ControlType.ToLowerInvariant())
+                                {
+                                    case "date":
+                                        <input id="param_@parameter.Key"
+                                               name="param_@parameter.Key"
+                                               class="form-control"
+                                               type="date"
+                                               value="@currentValue"
+                                               placeholder="@parameter.Placeholder"
+                                               required="@parameter.Required" />
+                                        break;
+                                    case "number":
+                                        <input id="param_@parameter.Key"
+                                               name="param_@parameter.Key"
+                                               class="form-control"
+                                               type="number"
+                                               step="any"
+                                               value="@currentValue"
+                                               placeholder="@parameter.Placeholder"
+                                               required="@parameter.Required" />
+                                        break;
+                                    case "dropdown":
+                                    case "select":
+                                        <select id="param_@parameter.Key"
+                                                name="param_@parameter.Key"
+                                                class="form-select"
+                                                required="@parameter.Required">
+                                            @if (!parameter.Required)
+                                            {
+                                                <option value="">Select...</option>
+                                            }
+                                            @foreach (var option in parameter.Options)
+                                            {
+                                                var isSelected = string.Equals(option.Value, currentValue, StringComparison.Ordinal);
+                                                <option value="@option.Value" selected="@isSelected">@option.Label</option>
+                                            }
+                                        </select>
+                                        break;
+                                    default:
+                                        <input id="param_@parameter.Key"
+                                               name="param_@parameter.Key"
+                                               class="form-control"
+                                               type="text"
+                                               value="@currentValue"
+                                               placeholder="@parameter.Placeholder"
+                                               required="@parameter.Required" />
+                                        break;
+                                }
+                            </div>
+                        }
+
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Apply</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        }
 
         @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
         {
@@ -74,9 +162,8 @@
                     <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-reportKey="@Model.SelectedReportKey"
-                           asp-route-page="@(Model.Page - 1)"
-                           asp-route-pageSize="@Model.PageSize">
+                           asp-all-route-data="@routeValues"
+                           asp-route-page="@(Model.Page - 1)">
                             Previous
                         </a>
                     </li>
@@ -86,9 +173,8 @@
                     <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-reportKey="@Model.SelectedReportKey"
-                           asp-route-page="@(Model.Page + 1)"
-                           asp-route-pageSize="@Model.PageSize">
+                           asp-all-route-data="@routeValues"
+                           asp-route-page="@(Model.Page + 1)">
                             Next
                         </a>
                     </li>
