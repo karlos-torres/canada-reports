@@ -1,15 +1,17 @@
-using System.Diagnostics;
+using TGCa_Reports.Models;
+using TGCa_Reports.Services;
 using Microsoft.AspNetCore.Mvc;
-using canada_reports.Models;
+using System.Diagnostics;
+using System.Drawing;
 using System.Text;
-using canada_reports.Services;
 
-namespace canada_reports.Controllers;
+namespace TGCa_Reports.Controllers;
 
 public class HomeController(IReportService reportService) : Controller
 {
     private const int DefaultPageSize = 10;
     private readonly IReportService _reportService = reportService;
+
 
     public async Task<IActionResult> Index(string? reportKey, int page = 1, int pageSize = DefaultPageSize, CancellationToken cancellationToken = default)
     {

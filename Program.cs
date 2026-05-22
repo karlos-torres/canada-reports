@@ -1,4 +1,4 @@
-using canada_reports.Services;
+using TGCa_Reports.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,12 +17,11 @@ app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
+app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 
 app.Run();

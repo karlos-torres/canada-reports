@@ -1,6 +1,6 @@
-using canada_reports.Models;
+using TGCa_Reports.Models;
 
-namespace canada_reports.Services;
+namespace TGCa_Reports.Services;
 
 public interface IReportService
 {

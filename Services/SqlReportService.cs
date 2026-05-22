@@ -1,9 +1,9 @@
 using System.Data;
 using Microsoft.Data.SqlClient;
-using canada_reports.Models;
+using TGCa_Reports.Models;
 using System.Globalization;
 
-namespace canada_reports.Services;
+namespace TGCa_Reports.Services;
 
 public class SqlReportService(IConfiguration configuration) : IReportService
 {
@@ -184,6 +184,14 @@ public class SqlReportService(IConfiguration configuration) : IReportService
                     }
 
                     command.Parameters.AddWithValue($"@{parameter.Key}", parsedNumber);
+                    break;
+                case "integer":
+                    if (!int.TryParse(valueToUse, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedInteger))
+                    {
+                        throw new InvalidOperationException($"Invalid number value for parameter '{parameter.Label}'.");
+                    }
+
+                    command.Parameters.AddWithValue($"@{parameter.Key}", parsedInteger);
                     break;
                 case "dropdown":
                 case "select":

@@ -1,4 +1,4 @@
-namespace canada_reports.Models;
+namespace TGCa_Reports.Models;
 
 public class ErrorViewModel
 {
