@@ -4,7 +4,7 @@
     ViewData["Title"] = "Reports Dashboard";
 }
 
-<div class="row">
+<div class="row" id="report-dashboard" data-selected-report-key="@Model.SelectedReportKey">
     <aside class="col-md-3 mb-3">
         <div class="card">
             <div class="card-header">Reports</div>
@@ -13,9 +13,7 @@
                 {
                     <a class="list-group-item list-group-item-action @(Model.SelectedReportKey == report.Key ? "active" : "")"
                        asp-action="Index"
-                       asp-route-reportKey="@report.Key"
-                       asp-route-page="1"
-                       asp-route-pageSize="@Model.PageSize">
+                       asp-route-reportKey="@report.Key">
                         @report.Name
                     </a>
                 }
@@ -23,77 +21,72 @@
         </div>
     </aside>
     <section class="col-md-9">
-        <div class="d-flex justify-content-between align-items-center mb-2">
+        <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
             <h2 class="h4 mb-0">@Model.SelectedReportName</h2>
-            @if (!string.IsNullOrWhiteSpace(Model.SelectedReportKey))
-            {
-                <a class="btn btn-success"
-                   asp-action="Export"
-                   asp-route-reportKey="@Model.SelectedReportKey">
-                    Export to Excel (CSV)
-                </a>
-            }
+            <div class="d-flex gap-2">
+                <button id="run-report-btn" class="btn btn-primary" @(string.IsNullOrWhiteSpace(Model.SelectedReportKey) ? "disabled" : null)>
+                    Run in background
+                </button>
+                <button id="refresh-runs-btn" class="btn btn-outline-secondary" type="button">Refresh</button>
+            </div>
         </div>
 
         @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
         {
             <div class="alert alert-danger">@Model.ErrorMessage</div>
         }
-        else if (Model.Columns.Count == 0)
-        {
-            <div class="alert alert-info">No data found for this report.</div>
-        }
         else
         {
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            @foreach (var column in Model.Columns)
-                            {
-                                <th>@column</th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var row in Model.Rows)
-                        {
-                            <tr>
-                                @foreach (var cell in row)
-                                {
-                                    <td>@cell</td>
-                                }
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+            <div id="run-feedback" class="alert alert-info d-none"></div>
+            <div id="run-loading" class="d-none mb-3">
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                <span>Starting background run...</span>
             </div>
 
-            <nav aria-label="Report pagination">
-                <ul class="pagination">
-                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
-                        <a class="page-link"
-                           asp-action="Index"
-                           asp-route-reportKey="@Model.SelectedReportKey"
-                           asp-route-page="@(Model.Page - 1)"
-                           asp-route-pageSize="@Model.PageSize">
-                            Previous
-                        </a>
-                    </li>
-                    <li class="page-item disabled">
-                        <span class="page-link">Page @Model.Page of @Model.TotalPages</span>
-                    </li>
-                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
-                        <a class="page-link"
-                           asp-action="Index"
-                           asp-route-reportKey="@Model.SelectedReportKey"
-                           asp-route-page="@(Model.Page + 1)"
-                           asp-route-pageSize="@Model.PageSize">
-                            Next
-                        </a>
-                    </li>
+            <div class="card mb-3">
+                <div class="card-header">Latest run status</div>
+                <div class="card-body">
+                    <div id="latest-run-empty" class="text-muted">No runs yet.</div>
+                    <div id="latest-run-details" class="d-none">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <strong id="latest-run-name"></strong>
+                            <span id="latest-run-status" class="badge text-bg-secondary"></span>
+                        </div>
+                        <div class="small text-muted mb-2" id="latest-run-meta"></div>
+                        <div id="latest-run-stage" class="fw-semibold"></div>
+                        <button id="cancel-run-btn" type="button" class="btn btn-sm btn-outline-danger mt-2 d-none">Cancel run</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">Notifications</div>
+                <ul id="notifications-list" class="list-group list-group-flush">
+                    <li class="list-group-item text-muted">No notifications yet.</li>
                 </ul>
-            </nav>
+            </div>
+
+            <div class="card">
+                <div class="card-header">Recent report runs</div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Report</th>
+                                <th>Status</th>
+                                <th>Requested</th>
+                                <th>Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-runs-body">
+                            <tr>
+                                <td colspan="5" class="text-muted">No runs yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         }
     </section>
 </div>
