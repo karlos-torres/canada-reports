@@ -44,3 +44,23 @@ body {
   display: flex;
   align-items: center;
 }
+
+.margin-t-50 {
+    margin-top: 50px;
+}
+
+.card-header {
+    color: #fff;
+    background-color: rgb(0 112 60);
+    font-weight: 500;   
+}
+
+.btn-primary {
+    background-color: rgb(0 112 60);
+    border-color: rgb(0 112 60);
+}
+
+.list-group-item-action.active {
+    background-color: rgb(0 185 91);
+    border-color: rgb(0 112 60);
+}

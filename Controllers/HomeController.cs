@@ -36,7 +36,7 @@ public class HomeController(IReportService reportService) : Controller
         });
     }
 
-    public IActionResult Dashboard(string? reportKey)
+    public IActionResult Dashboard()
     {
         var reports = _reportService.GetReports();
 
@@ -51,14 +51,14 @@ public class HomeController(IReportService reportService) : Controller
             });
         }
 
-        var selectedReport = reports.FirstOrDefault(r =>
-            r.Key.Equals(reportKey, StringComparison.OrdinalIgnoreCase)) ?? reports[0];
+        //var selectedReport = reports.FirstOrDefault(r =>
+        //    r.Key.Equals(reportKey, StringComparison.OrdinalIgnoreCase)) ?? reports[0];
 
         return View(new ReportPageViewModel
         {
             Reports = reports,
-            SelectedReportKey = selectedReport.Key,
-            SelectedReportName = selectedReport.Name,
+            SelectedReportKey = "",
+            SelectedReportName = "",
             ErrorMessage = null
         });
     }

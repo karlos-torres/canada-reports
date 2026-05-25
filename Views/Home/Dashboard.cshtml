@@ -18,7 +18,7 @@
         </div>
 
 
-        <div class="card">
+        <div class="card margin-t-50">
             <div class="card-header">Reports</div>
             <div class="list-group list-group-flush">
                 @foreach (var report in Model.Reports)
@@ -33,15 +33,7 @@
         </div>
     </aside>
     <section class="col-md-9">
-        <div class="d-flex justify-content-between align-items-center mb-2 gap-2 flex-wrap">
-            <h2 class="h4 mb-0">@Model.SelectedReportName</h2>
-            <div class="d-flex gap-2">
-                <button id="run-report-btn" class="btn btn-primary" @(string.IsNullOrWhiteSpace(Model.SelectedReportKey) ? "disabled" : null)>
-                    Run in background
-                </button>
-                <button id="refresh-runs-btn" class="btn btn-outline-secondary" type="button">Refresh</button>
-            </div>
-        </div>
+
 
         @if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
         {

@@ -134,7 +134,7 @@
                 return `
 <tr>
 <td>${run.reportName}</td>
-<td><span class="badge ${statusClassMap[run.status] || "text-bg-secondary"}">${run.status}</span><div class="small text-muted">${run.stageText}</div></td>
+<td><div class="small text-muted">${run.stageText}</div></td>
 <td>${formatDate(run.requestedAtUtc)}</td>
 <td>${formatDuration(run.durationSeconds)}</td>
 <td class="d-flex gap-2 flex-wrap">${downloadLink}${cancelButton}</td>
