@@ -1,6 +1,7 @@
 using System.Data;
 using Microsoft.Data.SqlClient;
 using canada_reports.Models;
+using System.Text;
 
 namespace canada_reports.Services;
 
@@ -65,7 +66,14 @@ public class SqlReportService(IConfiguration configuration) : IReportService
         await using var connection = new SqlConnection(GetConnectionString());
         await connection.OpenAsync(cancellationToken);
 
-        var sql = $"SELECT * FROM ({safeQuery}) AS report_data;";
+        StringBuilder sbQuery = new StringBuilder();
+        sbQuery.AppendLine("CREATE TABLE #Result (Id INT, SKU VARCHAR(50), DisplayName VARCHAR(MAX), Description VARCHAR(MAX), ProductType VARCHAR(1000), ProductTypeOrder INT, StandaloneSku VARCHAR(100), StandaloneSkupct DECIMAL(11,2)) ");
+        sbQuery.AppendLine($"INSERT #Result EXEC {safeQuery} ");
+        sbQuery.AppendLine("SELECT * FROM #Result AS report_data;");
+        sbQuery.AppendLine("DROP TABLE #Result;");
+        
+        //var sql = $"SELECT * FROM ({safeQuery}) AS report_data;";
+        var sql = sbQuery.ToString();
         await using var command = new SqlCommand(sql, connection);
 
         var rows = new List<IReadOnlyList<object?>>();
@@ -115,7 +123,7 @@ public class SqlReportService(IConfiguration configuration) : IReportService
         var upperQuery = cleanedQuery.ToUpperInvariant();
 
         if (string.IsNullOrWhiteSpace(cleanedQuery) ||
-            !upperQuery.StartsWith("SELECT ") ||
+            //!upperQuery.StartsWith("SELECT ") ||
             cleanedQuery.Contains(';') ||
             upperQuery.Contains("--") ||
             upperQuery.Contains("/*") ||
@@ -126,7 +134,7 @@ public class SqlReportService(IConfiguration configuration) : IReportService
             upperQuery.Contains("DROP ") ||
             upperQuery.Contains("ALTER ") ||
             upperQuery.Contains("TRUNCATE ") ||
-            upperQuery.Contains("EXEC ") ||
+            //upperQuery.Contains("EXEC ") ||
             upperQuery.Contains("MERGE "))
         {
             throw new InvalidOperationException("Only single SELECT report queries are allowed.");

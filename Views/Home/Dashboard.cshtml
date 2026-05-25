@@ -55,6 +55,50 @@
                 <span>Starting background run...</span>
             </div>
 
+            <div class="card mb-3">
+                <div class="card-header">Latest run status</div>
+                <div class="card-body">
+                    <div id="latest-run-empty" class="text-muted">No runs yet.</div>
+                    <div id="latest-run-details" class="d-none">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <strong id="latest-run-name"></strong>
+                            <span id="latest-run-status" class="badge text-bg-secondary"></span>
+                        </div>
+                        <div class="small text-muted mb-2" id="latest-run-meta"></div>
+                        <div id="latest-run-stage" class="fw-semibold"></div>
+                        <button id="cancel-run-btn" type="button" class="btn btn-sm btn-outline-danger mt-2 d-none">Cancel run</button>
+                    </div>
+                </div>
+            </div>
+
+@*             <div class="card mb-3">
+                <div class="card-header">Notifications</div>
+                <ul id="notifications-list" class="list-group list-group-flush">
+                    <li class="list-group-item text-muted">No notifications yet.</li>
+                </ul>
+            </div> *@
+
+            <div class="card">
+                <div class="card-header">Recent report runs</div>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Report</th>
+                                <th>Status</th>
+                                <th>Requested</th>
+                                <th>Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-runs-body">
+                            <tr>
+                                <td colspan="5" class="text-muted">No runs yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         }
     </section>
 </div>

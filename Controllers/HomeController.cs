@@ -36,6 +36,33 @@ public class HomeController(IReportService reportService) : Controller
         });
     }
 
+    public IActionResult Dashboard(string? reportKey)
+    {
+        var reports = _reportService.GetReports();
+
+        if (reports.Count == 0)
+        {
+            return View(new ReportPageViewModel
+            {
+                Reports = reports,
+                SelectedReportKey = string.Empty,
+                SelectedReportName = "No reports configured",
+                ErrorMessage = "No report definitions were found. Configure the Reports section in appsettings."
+            });
+        }
+
+        var selectedReport = reports.FirstOrDefault(r =>
+            r.Key.Equals(reportKey, StringComparison.OrdinalIgnoreCase)) ?? reports[0];
+
+        return View(new ReportPageViewModel
+        {
+            Reports = reports,
+            SelectedReportKey = selectedReport.Key,
+            SelectedReportName = selectedReport.Name,
+            ErrorMessage = null
+        });
+    }
+
     public IActionResult Privacy()
     {
         return View();
